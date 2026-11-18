@@ -178,6 +178,7 @@ tr.pass td{color:var(--muted);font-size:12px}
 .lb td,.lb th{padding:7px 2px}
 .lb .medal{font-size:16px}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:8px}
+.topbar{display:flex;gap:8px;margin:0 0 12px}.topbar .btn{flex:1}
 .timebox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .timebox .t{padding:10px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.9;min-width:0}
 .timebox .t b{display:block;color:var(--gold-hi);font-size:12px;font-weight:600}
@@ -294,12 +295,14 @@ tr.pass td{color:var(--muted);font-size:12px}
       </div>
     </div>
     <div class="meta" id="meta"></div>
+    <div class="topbar"><button class="btn ghost small" id="editBtn">✏️ ویرایش نام‌ها</button><button class="btn ghost small" id="newBtn2">🔄 بازی جدید</button></div>
     <div class="dealer" id="dealerRow">🎴 <span data-i="dealer"></span> <span class="pill" id="dealerName"></span><button id="dealerNext" data-i="change"></button></div>
 
     <div class="panel anim hidden" id="stepFirst">
       <h2><span class="n">🎴</span> <span data-i="pickFirst"></span></h2>
       <p style="margin:0 0 12px;font-size:13px;color:var(--muted);line-height:1.8" data-i="pickHint"></p>
       <div class="pbtns" id="firstBtns"></div>
+      <button class="btn ghost small" id="backSetup" style="margin-top:12px">↩ بازگشت به صفحهٔ تنظیمات</button>
     </div>
 
     <div class="panel anim" id="stepBid">
@@ -377,6 +380,19 @@ tr.pass td{color:var(--muted);font-size:12px}
   <div class="row"><button class="btn ghost" id="cfNo" data-i="no"></button><button class="btn" id="cfYes" data-i="yes"></button></div>
 </div></div>
 
+<div class="modal" id="editModal"><div class="panel" style="text-align:right">
+  <h2>✏️ ویرایش تیم‌ها و بازیکن‌ها</h2>
+  <div class="team-box a"><div class="tt">تیم اول</div>
+    <label>نام تیم</label><input type="text" id="eTA" maxlength="30" placeholder="اختیاری">
+    <div class="row"><div><label>بازیکن ۱</label><input type="text" id="e0" maxlength="24"></div><div><label>بازیکن ۲</label><input type="text" id="e2" maxlength="24"></div></div></div>
+  <div class="team-box b"><div class="tt">تیم دوم</div>
+    <label>نام تیم</label><input type="text" id="eTB" maxlength="30" placeholder="اختیاری">
+    <div class="row"><div><label>بازیکن ۱</label><input type="text" id="e1" maxlength="24"></div><div><label>بازیکن ۲</label><input type="text" id="e3" maxlength="24"></div></div></div>
+  <p style="font-size:12px;color:var(--muted);margin:4px 0 0">امتیازها و دست‌های ثبت‌شده دست نمی‌خورند؛ فقط نام‌ها عوض می‌شوند.</p>
+  <div class="err" id="editErr"></div>
+  <div class="row"><button class="btn ghost" id="editCancel">انصراف</button><button class="btn" id="editSave">ذخیره</button></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -438,7 +454,7 @@ function applyLang(){
 function save(){store.set(KEY,JSON.stringify(S))}
 function load(){try{const v=store.get(KEY);return v?JSON.parse(v):null}catch(e){return null}}
 function toast(html){const e=$('toast');e.innerHTML=html;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2800)}
-function confirmBox(text){return new Promise(r=>{$('cfText').textContent=text;$('confirmModal').classList.add('show');
+function confirmBox(text,yes,no){return new Promise(r=>{$('cfText').textContent=text;$('cfYes').textContent=yes||T('yes');$('cfNo').textContent=no||T('no');$('confirmModal').classList.add('show');
   $('cfYes').onclick=()=>{$('confirmModal').classList.remove('show');r(true)};$('cfNo').onclick=()=>{$('confirmModal').classList.remove('show');r(false)}})}
 
 /* ---------- setup ---------- */
@@ -615,7 +631,18 @@ function histHTML(g){
 }
 function undoLast(){if(S.over)archRemove(S.startedAt);const h=S.hands.pop();if(h&&h.dealer!==undefined)S.dealer=h.dealer;S.over=false;S.endedAt=null;save();renderBoard();renderHist();renderBidStep()}
 $('undoBtn').onclick=async()=>{if(!S.hands.length)return;if(!await confirmBox(T('cfUndo')))return;undoLast();toast(T('toastUndo'))};
-$('newBtn').onclick=async()=>{if(!await confirmBox(S.over||!S.hands.some(h=>!h.pass)?T('cfNew'):'بازی جدید شروع شود؟ این بازی به‌عنوان «نیمه‌تمام» در بازی‌های قبلی ذخیره می‌شود.'))return;resetToSetup()};
+$('newBtn').onclick=$('newBtn2').onclick=async()=>{if(!await confirmBox(S.over||!S.hands.some(h=>!h.pass)?'بازی فعلی بسته شود و به صفحهٔ تنظیمات برگردی؟ (نام‌ها و قوانین حفظ می‌شوند)':'بازی فعلی بسته شود و به صفحهٔ تنظیمات برگردی؟ این بازی به‌عنوان «نیمه‌تمام» در بازی‌های قبلی ذخیره می‌شود.','بله، بازی جدید','انصراف — ادامهٔ همین بازی'))return;resetToSetup()};
+$('backSetup').onclick=()=>resetToSetup();
+$('editBtn').onclick=()=>{[0,1,2,3].forEach(i=>$('e'+i).value=S.players[i]);$('eTA').value=S.teams[0]||'';$('eTB').value=S.teams[1]||'';$('editErr').textContent='';$('editModal').classList.add('show')};
+$('editCancel').onclick=()=>$('editModal').classList.remove('show');
+$('editSave').onclick=()=>{
+  const names=[0,1,2,3].map(i=>$('e'+i).value.trim());
+  if(names.some(n=>!n)){$('editErr').textContent=T('errNames');return}
+  if(new Set(names).size<4){$('editErr').textContent=T('errDup');return}
+  S.players=names;S.teams=[$('eTA').value.trim()||null,$('eTB').value.trim()||null];save();
+  try{const st=JSON.parse(store.get(SETUP_KEY)||'{}');st.players=names;st.tA=S.teams[0]||'';st.tB=S.teams[1]||'';store.set(SETUP_KEY,JSON.stringify(st))}catch(e){}
+  [0,1,2,3].forEach(i=>$('p'+i).value=names[i]);$('tAname').value=S.teams[0]||'';$('tBname').value=S.teams[1]||'';
+  $('editModal').classList.remove('show');renderBoard();renderHist();curStep==='res'?renderResStep(true):renderBidStep();toast('نام‌ها به‌روز شد ✔')};
 function resetToSetup(){
   if(S&&!S.over&&S.hands.some(h=>!h.pass))archAdd(null);
   S=null;store.del(KEY);restoreSetup();renderArchive();
