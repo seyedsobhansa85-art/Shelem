@@ -169,6 +169,15 @@ tr.pass td{color:var(--muted);font-size:12px}
 @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 .trophy{font-size:72px;animation:bounce 1.2s infinite}
 @keyframes bounce{50%{transform:translateY(-10px)}}
+.arch{display:block;width:100%;text-align:right;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--ivory);font:inherit;margin-bottom:8px;cursor:pointer;line-height:1.8}
+.arch .top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.arch .res{font-size:15px;font-weight:800;overflow-wrap:anywhere}
+.arch .tag{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--gold);color:#3a2600;font-weight:800}
+.arch .tag.u{background:rgba(255,255,255,.15);color:var(--ivory)}
+.lb{width:100%;font-size:13px}
+.lb td,.lb th{padding:7px 2px}
+.lb .medal{font-size:16px}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:8px}
 .timebox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .timebox .t{padding:10px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.9;min-width:0}
 .timebox .t b{display:block;color:var(--gold-hi);font-size:12px;font-weight:600}
@@ -249,7 +258,7 @@ tr.pass td{color:var(--muted);font-size:12px}
         <div class="rule"><span data-i="rWin"></span>
           <select id="rWin"><option value="got" selected data-i="rWinGot"></option><option value="bid" data-i="rWinBid"></option></select></div>
         <div class="rule"><span data-i="rLose"></span>
-          <select id="rLose"><option value="1" selected data-i="rLose1"></option><option value="2opp" data-i="rLose2opp"></option><option value="2" data-i="rLose2"></option></select></div>
+          <select id="rLose"><option value="2over100" selected data-i="rLose2o100"></option><option value="1" data-i="rLose1"></option><option value="2opp" data-i="rLose2opp"></option><option value="2" data-i="rLose2"></option></select></div>
         <div class="rule"><span data-i="rShelem"></span>
           <select id="rShelem"><option value="390" selected>± 390</option><option value="780">± 780</option><option value="195">± 195</option></select></div>
         <div class="rule"><span data-i="rAll"></span>
@@ -262,6 +271,14 @@ tr.pass td{color:var(--muted);font-size:12px}
     </div>
     <div class="err" id="setupErr"></div>
     <button class="btn shine" id="startBtn" data-i="start"></button>
+    <div class="panel" id="archPanel" style="margin-top:16px">
+      <h2>📚 بازی‌های قبلی</h2>
+      <div id="archList"></div>
+      <h2 style="margin-top:18px">🏆 جدول برترین‌ها</h2>
+      <div id="leader"></div>
+      <button class="btn ghost small" id="archClear" style="margin-top:12px">🗑 پاک کردن همهٔ بازی‌های قبلی</button>
+    </div>
+
   </section>
 
   <!-- ============ GAME ============ -->
@@ -349,6 +366,12 @@ tr.pass td{color:var(--muted);font-size:12px}
   <div class="row"><button class="btn ghost" id="winUndo" data-i="undoWin"></button><button class="btn" id="winNew" data-i="playAgain"></button></div>
 </div></div>
 
+<div class="modal" id="archModal"><div class="panel" style="max-width:520px;max-height:88vh;overflow:auto;text-align:right">
+  <h2 id="adTitle" style="justify-content:space-between"></h2>
+  <div id="adBody"></div>
+  <div class="row" style="margin-top:12px"><button class="btn ghost small" id="adDel">🗑 حذف این بازی</button><button class="btn small" id="adClose">بستن</button></div>
+</div></div>
+
 <div class="modal" id="confirmModal"><div class="panel">
   <h2 style="justify-content:center" id="cfText"></h2>
   <div class="row"><button class="btn ghost" id="cfNo" data-i="no"></button><button class="btn" id="cfYes" data-i="yes"></button></div>
@@ -365,7 +388,7 @@ fa:{dir:'rtl',docTitle:'امتیازشمار شلم',title:'امتیازشمار
  fd0:'بازیکن ۱ تیم اول',fd1:'بازیکن ۱ تیم دوم',fd2:'بازیکن ۲ تیم اول',fd3:'بازیکن ۲ تیم دوم',
  setup2:'سقف امتیاز',customTarget:'یا عدد دلخواه (۱۰۰ تا ۱۰۰۰۰۰):',rules:'⚙️ قوانین محاسبه (قابل تغییر)',
  rMin:'حداقل خواندن',rWin:'اگر حاکم به خوانده‌اش برسد',rWinGot:'امتیازِ گرفته‌شده',rWinBid:'به‌اندازهٔ خوانده',
- rLose:'اگر حاکم نرسد',rLose1:'منفیِ خوانده',rLose2opp:'دو برابر، اگر حریف بیشتر گرفت',rLose2:'همیشه دو برابر',
+ rLose:'اگر حاکم نرسد',rLose1:'منفیِ خوانده',rLose2opp:'دو برابر، اگر حریف بیشتر گرفت',rLose2o100:'دو برابر، اگر حریف بیش از ۱۰۰ گرفت',rLose2:'همیشه دو برابر',
  rShelem:'امتیاز شلمِ اعلام‌شده',rAll:'گرفتن همهٔ ۱۹۵ بدون اعلام شلم',rAll330:'۳۹۰ امتیاز',rAllNone:'همان ۱۹۵',
  rOpp:'امتیاز تیم مقابل همیشه حساب شود',rNeg:'رسیدن به منفیِ سقف = باخت',houseRule:'قانون خانگی',start:'🃏 شروع بازی',
  errNames:'لطفاً نام هر چهار بازیکن را وارد کن.',errDup:'نام بازیکن‌ها نباید تکراری باشد.',errTarget:'سقف امتیاز باید عددی بین ۱۰۰ و ۱۰۰۰۰۰ باشد.',
@@ -428,7 +451,7 @@ function restoreSetup(){
   let s=null;try{s=JSON.parse(store.get(SETUP_KEY)||'null')}catch(e){}
   if(s){[0,1,2,3].forEach(i=>$('p'+i).value=s.players[i]||'');$('tAname').value=s.tA||'';$('tBname').value=s.tB||'';
     $('target').value=fa(s.target||1165);const r=s.rules||{};
-    if(r.min)$('rMin').value=r.min;if(r.win)$('rWin').value=r.win;if(r.lose)$('rLose').value=r.lose;if(r.shelem)$('rShelem').value=r.shelem;
+    if(r.min)$('rMin').value=r.min;if(r.win)$('rWin').value=r.win;if(r.lose)$('rLose').value=s.m2?r.lose:'2over100';if(r.shelem)$('rShelem').value=r.shelem;
     if(r.all)$('rAll').value=r.all;if(r.opp!==undefined)$('rOpp').checked=r.opp;if(r.neg!==undefined)$('rNeg').checked=r.neg;}
   paintTargetChips();
 }
@@ -443,7 +466,7 @@ $('startBtn').onclick=()=>{
   err(null);
   const rules={min:+$('rMin').value,win:$('rWin').value,lose:$('rLose').value,shelem:+$('rShelem').value,all:$('rAll').value,opp:$('rOpp').checked,neg:$('rNeg').checked};
   const tA=$('tAname').value.trim(),tB=$('tBname').value.trim();
-  store.set(SETUP_KEY,JSON.stringify({players:names,tA,tB,target,rules}));
+  store.set(SETUP_KEY,JSON.stringify({players:names,tA,tB,target,rules,m2:1}));
   S={players:names,teams:[tA||null,tB||null],target,rules,hands:[],dealer:null,over:false,startedAt:Date.now(),endedAt:null};
   save();startGame(false);wakeLock();
 };
@@ -460,13 +483,13 @@ function startGame(restored){
 }
 
 /* ---------- scoring ---------- */
-function calcHand(h){
+function calcHand(h,r){
   if(h.pass)return {d:[0,0],note:T('nPass')};
-  const r=S.rules,t=teamOf(h.player),o=1-t,got=[h.gA,h.gB],me=got[t],opp=got[o];
+  r=r||S.rules;const t=teamOf(h.player),o=1-t,got=[h.gA,h.gB],me=got[t],opp=got[o];
   const d=[0,0];let note='';
-  const lossMul=r.lose==='2'?2:(r.lose==='2opp'&&opp>me?2:1);
+  const lossMul=r.lose==='2'?2:(r.lose==='2opp'&&opp>me)||(r.lose==='2over100'&&opp>100)?2:1;
   if(h.bid===SHELEM){
-    if(me===TOTAL){d[t]=r.shelem;note=T('nShelemOk')}else{d[t]=-r.shelem*lossMul;note=T('nShelemFail')}
+    if(me===TOTAL){d[t]=r.shelem;note=T('nShelemOk')}else{d[t]=-r.shelem;note=T('nShelemFail')}
   }else if(me>=h.bid){
     if(me===TOTAL&&r.all==='double'){d[t]=SHELEM;note=T('nAll')}
     else{d[t]=r.win==='bid'?h.bid:me;note=T('nMade')}
@@ -575,27 +598,71 @@ $('resOk').onclick=()=>{
 };
 
 /* ---------- history ---------- */
-function renderHist(){
-  if(!S.hands.length){$('hist').innerHTML=`<tr><td style="color:var(--muted)">${T('histEmpty')}</td></tr>`;return}
+function renderHist(){$('hist').innerHTML=histHTML({players:S.players,tn:[teamName(0),teamName(1)],hands:S.hands,rules:S.rules})}
+function histHTML(g){
+  if(!g.hands.length)return `<tr><td style="color:var(--muted)">${T('histEmpty')}</td></tr>`;
   let run=[0,0];
   const sg=x=>`<span class="${x<0?'minus':'plus'}">${x>0?'+':''}${fa(x)}</span>`;
-  const rows=S.hands.map((h,i)=>{
+  const rows=g.hands.map((h,i)=>{
     if(h.pass)return `<tr class="pass"><td>${fa(i+1)}</td><td colspan="4">${T('histPass')}</td></tr>`;
-    const {d}=calcHand(h);run=[run[0]+d[0],run[1]+d[1]];
-    return `<tr><td>${fa(i+1)}</td><td>${esc(S.players[h.player])}</td><td>${h.bid===SHELEM?T('shelem'):fa(h.bid)}${h.suit!=null?' '+SUITS[h.suit][0]:''}</td>
+    const {d}=calcHand(h,g.rules);run=[run[0]+d[0],run[1]+d[1]];
+    return `<tr><td>${fa(i+1)}</td><td>${esc(g.players[h.player])}</td><td>${h.bid===SHELEM?T('shelem'):fa(h.bid)}${h.suit!=null?' '+SUITS[h.suit][0]:''}</td>
       <td>${sg(d[0])}<br><small style="color:var(--muted)">${fa(run[0])}</small></td>
       <td>${sg(d[1])}<br><small style="color:var(--muted)">${fa(run[1])}</small></td></tr>`}).join('');
-  $('hist').innerHTML=`<colgroup><col style="width:10%"><col style="width:24%"><col style="width:20%"><col style="width:23%"><col style="width:23%"></colgroup>
-    <tr><th>#</th><th>${T('thBidder')}</th><th>${T('thBid')}</th><th style="color:var(--teamA)">${esc(teamName(0))}</th><th style="color:var(--teamB)">${esc(teamName(1))}</th></tr>${rows}
+  return `<colgroup><col style="width:10%"><col style="width:24%"><col style="width:20%"><col style="width:23%"><col style="width:23%"></colgroup>
+    <tr><th>#</th><th>${T('thBidder')}</th><th>${T('thBid')}</th><th style="color:var(--teamA)">${esc(g.tn[0])}</th><th style="color:var(--teamB)">${esc(g.tn[1])}</th></tr>${rows}
     <tr class="tot"><td colspan="3">${T('total')}</td><td class="tA">${fa(run[0])}</td><td class="tB">${fa(run[1])}</td></tr>`;
 }
-function undoLast(){const h=S.hands.pop();if(h&&h.dealer!==undefined)S.dealer=h.dealer;S.over=false;S.endedAt=null;save();renderBoard();renderHist();renderBidStep()}
+function undoLast(){if(S.over)archRemove(S.startedAt);const h=S.hands.pop();if(h&&h.dealer!==undefined)S.dealer=h.dealer;S.over=false;S.endedAt=null;save();renderBoard();renderHist();renderBidStep()}
 $('undoBtn').onclick=async()=>{if(!S.hands.length)return;if(!await confirmBox(T('cfUndo')))return;undoLast();toast(T('toastUndo'))};
-$('newBtn').onclick=async()=>{if(!await confirmBox(T('cfNew')))return;resetToSetup()};
+$('newBtn').onclick=async()=>{if(!await confirmBox(S.over||!S.hands.some(h=>!h.pass)?T('cfNew'):'بازی جدید شروع شود؟ این بازی به‌عنوان «نیمه‌تمام» در بازی‌های قبلی ذخیره می‌شود.'))return;resetToSetup()};
 function resetToSetup(){
-  S=null;store.del(KEY);restoreSetup();
+  if(S&&!S.over&&S.hands.some(h=>!h.pass))archAdd(null);
+  S=null;store.del(KEY);restoreSetup();renderArchive();
   $('winModal').classList.remove('show');$('game').classList.add('hidden');$('setup').classList.remove('hidden');lastTot=[0,0];window.scrollTo({top:0});
 }
+
+/* ---------- archive ---------- */
+const ARCH_KEY='shelem-archive-v1';
+function archGet(){try{const a=JSON.parse(store.get(ARCH_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+function archSet(a){store.set(ARCH_KEY,JSON.stringify(a))}
+function archRemove(id){archSet(archGet().filter(g=>g.id!==id))}
+function archAdd(w){
+  if(!S)return;const a=archGet().filter(g=>g.id!==S.startedAt);const t=totals();
+  a.unshift({id:S.startedAt,startedAt:S.startedAt,endedAt:S.endedAt||Date.now(),players:S.players.slice(),tn:[teamName(0),teamName(1)],
+    target:S.target,rules:S.rules,hands:S.hands,final:t,winner:w,unfinished:w==null});
+  archSet(a.slice(0,200));
+}
+function shortDT(t){try{const P={};new Intl.DateTimeFormat('fa-IR-u-ca-persian',{weekday:'short',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date(t)).forEach(x=>P[x.type]=x.value);
+  return `${P.weekday} ${P.day} ${P.month} ${P.year} · ${P.hour}:${P.minute}`}catch(e){return new Date(t).toLocaleString()}}
+function winnerLabel(g){return g.unfinished?'<span class="tag u">نیمه‌تمام</span>':g.winner===-2?'<span class="tag">مساوی</span>':`<span class="tag">🏆 ${esc(g.tn[g.winner])}</span>`}
+function renderArchive(){
+  const a=archGet();$('archPanel').classList.toggle('hidden',!a.length);if(!a.length)return;
+  $('archList').innerHTML=a.map(g=>`<button class="arch" data-id="${g.id}">
+    <div class="top"><span>${shortDT(g.startedAt)}</span><span>${fa(g.hands.filter(h=>!h.pass).length)} دست &nbsp;|&nbsp; ⏱ ${fmtDur(g.endedAt-g.startedAt)}</span></div>
+    <div class="res">${B(g.tn[0])} <span class="num">${fa(g.final[0])}</span> — <span class="num">${fa(g.final[1])}</span> ${B(g.tn[1])}</div>
+    <div>${winnerLabel(g)}</div></button>`).join('');
+  // leaderboard by player name
+  const P={};const get=n=>P[n]=P[n]||{n,games:0,wins:0,bids:0,made:0,sh:0,pts:0};
+  a.forEach(g=>{g.players.forEach((n,i)=>{const p=get(n);p.games++;if(!g.unfinished&&g.winner===i%2)p.wins++});
+    g.hands.forEach(h=>{if(h.pass)return;const p=get(g.players[h.player]),tm=h.player%2,v=calcHand(h,g.rules).d[tm];p.bids++;if(v>0)p.made++;if(h.bid===SHELEM&&v>0)p.sh++;p.pts+=v})});
+  const L=Object.values(P).sort((x,y)=>y.wins-x.wins||(y.wins/y.games)-(x.wins/x.games)||y.pts-x.pts);
+  const medal=['🥇','🥈','🥉'];
+  $('leader').innerHTML=`<table class="lb"><colgroup><col style="width:9%"><col style="width:27%"><col style="width:16%"><col style="width:16%"><col style="width:16%"><col style="width:16%"></colgroup>
+    <tr><th></th><th>بازیکن</th><th>برد</th><th>حاکم</th><th>موفق</th><th>شلم</th></tr>
+    ${L.map((p,i)=>`<tr><td class="medal">${medal[i]||fa(i+1)}</td><td>${esc(p.n)}</td><td><b>${fa(p.wins)}</b>/${fa(p.games)}</td><td>${fa(p.bids)}</td><td>${fa(p.made)}</td><td>${fa(p.sh)}</td></tr>`).join('')}</table>
+    <div class="empty">برد/تعداد بازی · حاکم = چند بار حاکم شد · موفق = چند بار به خوانده‌اش رسید</div>`;
+}
+let openArch=null;
+$('archList').onclick=e=>{const b=e.target.closest('.arch');if(!b)return;const g=archGet().find(x=>String(x.id)===b.dataset.id);if(!g)return;openArch=g.id;
+  $('adTitle').innerHTML=`<span>${winnerLabel(g)}</span><span style="font-size:13px;color:var(--muted)">سقف ${fa(g.target)}</span>`;
+  $('adBody').innerHTML=`<div class="timebox" style="margin-bottom:12px"><div class="t"><b>🟢 شروع</b>${fmtDT(g.startedAt)}</div><div class="t"><b>🏁 پایان</b>${fmtDT(g.endedAt)}</div>
+    <div class="t full"><b>نتیجه</b>${B(g.tn[0])} ${fa(g.final[0])} — ${fa(g.final[1])} ${B(g.tn[1])} · ⏱ ${fmtDur(g.endedAt-g.startedAt)}</div></div>
+    <table>${histHTML(g)}</table>`;
+  $('archModal').classList.add('show')};
+$('adClose').onclick=()=>$('archModal').classList.remove('show');
+$('adDel').onclick=async()=>{$('archModal').classList.remove('show');if(!await confirmBox('این بازی از بازی‌های قبلی حذف شود؟'))return;archRemove(openArch);renderArchive()};
+$('archClear').onclick=async()=>{if(!await confirmBox('همهٔ بازی‌های قبلی و جدول برترین‌ها پاک شود؟'))return;archSet([]);renderArchive()};
 
 /* ---------- win ---------- */
 function checkWin(silent){
@@ -607,7 +674,7 @@ function checkWin(silent){
     if(neg.length===2){w=s[0]===s[1]?-2:(s[0]>s[1]?0:1);why=T(w===-2?'drawNeg':'winNegBoth')}
     else if(neg.length===1){w=1-neg[0];why=T('winNeg',{t:B(teamName(neg[0])),x:fa(S.target)})}}
   if(w===-1)return;
-  S.over=true;if(!S.endedAt)S.endedAt=(S.hands[S.hands.length-1]||{}).at||Date.now();save();
+  S.over=true;if(!S.endedAt)S.endedAt=(S.hands[S.hands.length-1]||{}).at||Date.now();save();archAdd(w);
   $('winTitle').innerHTML=w===-2?T('draw'):T('winTitle',{t:B(teamName(w))});
   $('winText').innerHTML=`${why}<br>${w===-2?'🤝':B(S.players[w])+T('and')+B(S.players[w+2])+' 👏'}<br><br>${T('finalScore')}: ${B(teamName(0))} ${fa(s[0])} — ${B(teamName(1))} ${fa(s[1])}<br>⏱ مدت بازی: ${fmtDur(S.endedAt-S.startedAt)}`;renderTime();
   $('winModal').classList.add('show');
@@ -728,7 +795,7 @@ addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const r=doc
   r.setProperty('--tx',((e.clientX/innerWidth-.5)*12)+'px');r.setProperty('--ty',((e.clientY/innerHeight-.5)*12)+'px')});
 
 /* ---------- boot ---------- */
-restoreSetup();
+restoreSetup();renderArchive();
 const saved=load();
 if(saved&&Array.isArray(saved.players)&&saved.rules){S=saved;startGame(true)}
 applyLang();
