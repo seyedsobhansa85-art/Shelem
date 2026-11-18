@@ -277,7 +277,14 @@ tr.pass td{color:var(--muted);font-size:12px}
       <div id="archList"></div>
       <h2 style="margin-top:18px">🏆 جدول برترین‌ها</h2>
       <div id="leader"></div>
-      <button class="btn ghost small" id="archClear" style="margin-top:12px">🗑 پاک کردن همهٔ بازی‌های قبلی</button>
+      <h2 style="margin-top:18px">💾 پشتیبان و گزارش</h2>
+      <div class="tabs" style="margin-top:0;flex-wrap:wrap">
+        <button class="btn small" id="pdfBtn">📄 گزارش PDF</button>
+        <button class="btn ghost small" id="backupBtn">💾 پشتیبان‌گیری</button>
+        <button class="btn ghost small" id="restoreBtn">📂 بازیابی</button>
+      </div>
+      <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
+      <div class="empty" id="backupNote">فایل پشتیبان را در Files یا تلگرام نگه دار؛ اگر مرورگر پاک شد یا گوشی عوض شد، با «بازیابی» همه‌چیز برمی‌گردد.</div>
     </div>
 
   </section>
@@ -315,9 +322,7 @@ tr.pass td{color:var(--muted);font-size:12px}
         <button id="bidMinus" aria-label="−">−</button>
       </div>
       <div class="quick" id="bidQuick"></div>
-      <label style="margin-top:14px" data-i="trumpOpt"></label>
-      <div class="suits" id="suits"></div>
-      <div class="err" id="bidErr"></div>
+            <div class="err" id="bidErr"></div>
       <button class="btn shine" id="bidOk" style="margin-top:4px" data-i="bidOk"></button>
       <button class="btn ghost small" id="passBtn" style="margin-top:8px" data-i="pass"></button>
     </div>
@@ -347,7 +352,7 @@ tr.pass td{color:var(--muted);font-size:12px}
       <div class="legend" id="legend"></div>
       <h2 style="margin-top:16px" data-i="statsTitle"></h2>
       <div class="stats" id="stats"></div>
-      <div class="suitstats" id="suitstats"></div>
+      
       </div>
     </div>
 
@@ -372,7 +377,7 @@ tr.pass td{color:var(--muted);font-size:12px}
 <div class="modal" id="archModal"><div class="panel" style="max-width:520px;max-height:88vh;overflow:auto;text-align:right">
   <h2 id="adTitle" style="justify-content:space-between"></h2>
   <div id="adBody"></div>
-  <div class="row" style="margin-top:12px"><button class="btn ghost small" id="adDel">🗑 حذف این بازی</button><button class="btn small" id="adClose">بستن</button></div>
+  <div class="row" style="margin-top:12px"><button class="btn small" id="adClose">بستن</button></div>
 </div></div>
 
 <div class="modal" id="confirmModal"><div class="panel">
@@ -546,13 +551,13 @@ function renderBidStep(){
   $('bidQuick').innerHTML=qs.map(v=>`<span class="chip${bid.value===v?' on':''}" data-v="${v}">${fa(v)}</span>`).join('')+
     `<span class="chip shelem-chip${bid.value===SHELEM?' on':''}" data-v="${SHELEM}">${T('shelem')} ♛</span>`;
   $('bidVal').textContent=bid.value===SHELEM?T('shelem'):fa(bid.value);
-  $('suits').innerHTML=SUITS.map(([s,r],i)=>`<div class="suit${r?' r':''}${bid.suit===i?' on':''}" data-s="${i}">${s}</div>`).join('');
+  if($('suits'))$('suits').innerHTML=SUITS.map(([s,r],i)=>`<div class="suit${r?' r':''}${bid.suit===i?' on':''}" data-s="${i}">${s}</div>`).join('');
   $('bidErr').textContent='';
 }
 $('firstBtns').onclick=e=>{const b=e.target.closest('.pbtn');if(!b)return;S.dealer=+b.dataset.p;save();renderBoard();renderBidStep()};
 $('pbtns').onclick=e=>{const b=e.target.closest('.pbtn');if(!b)return;bid.player=+b.dataset.p;renderBidStep()};
 $('bidQuick').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;bid.value=+c.dataset.v;renderBidStep()};
-$('suits').onclick=e=>{const c=e.target.closest('.suit');if(!c)return;const i=+c.dataset.s;bid.suit=bid.suit===i?null:i;renderBidStep()};
+if($('suits'))$('suits').onclick=e=>{const c=e.target.closest('.suit');if(!c)return;const i=+c.dataset.s;bid.suit=bid.suit===i?null:i;renderBidStep()};
 $('bidPlus').onclick=()=>{if(bid.value===SHELEM)return;bid.value=bid.value>=TOTAL?SHELEM:bid.value+5;renderBidStep()};
 $('bidMinus').onclick=()=>{bid.value=bid.value===SHELEM?TOTAL:Math.max(S.rules.min,bid.value-5);renderBidStep()};
 $('bidOk').onclick=()=>{if(bid.player===null){$('bidErr').textContent=T('errNoBidder');return}renderResStep()};
@@ -567,7 +572,7 @@ function renderResStep(keep){
   $('resTitle').textContent=T('resTitle',{n:fa(S.hands.length+1)});
   const t=teamOf(bid.player);
   $('curInfo').innerHTML=T('curInfo',{p:B(S.players[bid.player]),t:B(teamName(t)),b:`<b>${bid.value===SHELEM?T('shelem'):fa(bid.value)}</b>`})+
-    (bid.suit!==null?` · ${T('trump')}: <b>${SUITS[bid.suit][0]}</b>`:'');
+    '';
   $('lblA').textContent=teamName(0)+(t===0?T('bidderTag'):'');$('lblB').textContent=teamName(1)+(t===1?T('bidderTag'):'');
   if(keep){const big=['gA','gB'].some(id=>intOf($(id).value)>TOTAL);updatePreview(big?T('errRange'):'');return}
   $('gA').value='';$('gB').value='';$('resErr').textContent='';$('preview').textContent=T('previewHint');
@@ -622,7 +627,7 @@ function histHTML(g){
   const rows=g.hands.map((h,i)=>{
     if(h.pass)return `<tr class="pass"><td>${fa(i+1)}</td><td colspan="4">${T('histPass')}</td></tr>`;
     const {d}=calcHand(h,g.rules);run=[run[0]+d[0],run[1]+d[1]];
-    return `<tr><td>${fa(i+1)}</td><td>${esc(g.players[h.player])}</td><td>${h.bid===SHELEM?T('shelem'):fa(h.bid)}${h.suit!=null?' '+SUITS[h.suit][0]:''}</td>
+    return `<tr><td>${fa(i+1)}</td><td>${esc(g.players[h.player])}</td><td>${h.bid===SHELEM?T('shelem'):fa(h.bid)}</td>
       <td>${sg(d[0])}<br><small style="color:var(--muted)">${fa(run[0])}</small></td>
       <td>${sg(d[1])}<br><small style="color:var(--muted)">${fa(run[1])}</small></td></tr>`}).join('');
   return `<colgroup><col style="width:10%"><col style="width:24%"><col style="width:20%"><col style="width:23%"><col style="width:23%"></colgroup>
@@ -664,7 +669,7 @@ function shortDT(t){try{const P={};new Intl.DateTimeFormat('fa-IR-u-ca-persian',
   return `${P.weekday} ${P.day} ${P.month} ${P.year} · ${P.hour}:${P.minute}`}catch(e){return new Date(t).toLocaleString()}}
 function winnerLabel(g){return g.unfinished?'<span class="tag u">نیمه‌تمام</span>':g.winner===-2?'<span class="tag">مساوی</span>':`<span class="tag">🏆 ${esc(g.tn[g.winner])}</span>`}
 function renderArchive(){
-  const a=archGet();$('archPanel').classList.toggle('hidden',!a.length);if(!a.length)return;
+  const a=archGet();if(!a.length){$('archList').innerHTML='<div class="empty">هنوز بازی‌ای ثبت نشده.</div>';$('leader').innerHTML='<div class="empty">بعد از اولین بازی ساخته می‌شود.</div>';return}
   $('archList').innerHTML=a.map(g=>`<button class="arch" data-id="${g.id}">
     <div class="top"><span>${shortDT(g.startedAt)}</span><span>${fa(g.hands.filter(h=>!h.pass).length)} دست &nbsp;|&nbsp; ⏱ ${fmtDur(g.endedAt-g.startedAt)}</span></div>
     <div class="res">${B(g.tn[0])} <span class="num">${fa(g.final[0])}</span> — <span class="num">${fa(g.final[1])}</span> ${B(g.tn[1])}</div>
@@ -688,8 +693,98 @@ $('archList').onclick=e=>{const b=e.target.closest('.arch');if(!b)return;const g
     <table>${histHTML(g)}</table>`;
   $('archModal').classList.add('show')};
 $('adClose').onclick=()=>$('archModal').classList.remove('show');
-$('adDel').onclick=async()=>{$('archModal').classList.remove('show');if(!await confirmBox('این بازی از بازی‌های قبلی حذف شود؟'))return;archRemove(openArch);renderArchive()};
-$('archClear').onclick=async()=>{if(!await confirmBox('همهٔ بازی‌های قبلی و جدول برترین‌ها پاک شود؟'))return;archSet([]);renderArchive()};
+
+/* ---------- backup / restore ---------- */
+function stamp(){const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`}
+async function deliverFile(blob,name){
+  const file=new File([blob],name,{type:blob.type});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});return true}}catch(e){if(e&&e.name==='AbortError')return false}
+  try{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return true}catch(e){toast('ذخیرهٔ فایل در این مرورگر ممکن نشد');return false}
+}
+$('backupBtn').onclick=async()=>{
+  const data={app:'shelem-score',version:1,exportedAt:Date.now(),archive:archGet(),current:S||load(),setup:JSON.parse(store.get(SETUP_KEY)||'null')};
+  const ok=await deliverFile(new Blob([JSON.stringify(data)],{type:'application/json'}),`shelem-backup_${stamp()}.json`);
+  if(ok)toast(`پشتیبان ساخته شد ✔ (${fa(data.archive.length)} بازی)`)};
+$('restoreBtn').onclick=()=>$('restoreFile').click();
+$('restoreFile').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const d=JSON.parse(await f.text());if(d.app!=='shelem-score'||!Array.isArray(d.archive))throw 0;
+    const a=archGet(),ids=new Set(a.map(g=>g.id));let added=0;
+    d.archive.forEach(g=>{if(g&&g.id&&!ids.has(g.id)){a.push(g);ids.add(g.id);added++}});
+    if(d.current&&d.current.hands&&d.current.hands.length&&!ids.has(d.current.startedAt)&&!load()&&!S){store.set(KEY,JSON.stringify(d.current))}
+    a.sort((x,y)=>y.startedAt-x.startedAt);archSet(a);renderArchive();
+    toast(`بازیابی انجام شد ✔ — ${fa(added)} بازی جدید اضافه شد`);
+    if(!S&&load()){S=load();startGame(true);if(S.over)checkWin(true)}
+  }catch(err){toast('این فایل، پشتیبانِ امتیازشمار شلم نیست')}};
+
+/* ---------- PDF report ---------- */
+function loadScript(src){return new Promise((ok,no)=>{if(document.querySelector(`script[src="${src}"]`))return ok();const sc=document.createElement('script');sc.src=src;sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
+function reportGames(){const a=archGet().slice();const cur=S||load();
+  if(cur&&!cur.over&&cur.hands&&cur.hands.some(h=>!h.pass)&&!a.some(g=>g.id===cur.startedAt)){
+    const t=[0,0];cur.hands.forEach(h=>{const {d}=calcHand(h,cur.rules);t[0]+=d[0];t[1]+=d[1]});
+    a.unshift({id:cur.startedAt,startedAt:cur.startedAt,endedAt:Date.now(),players:cur.players,tn:[cur.teams[0]||cur.players[0]+' و '+cur.players[2],cur.teams[1]||cur.players[1]+' و '+cur.players[3]],
+      target:cur.target,rules:cur.rules,hands:cur.hands,final:t,winner:null,unfinished:true,live:true})}
+  return a}
+function reportBlocks(games){
+  const css=`font-family:Vazirmatn,Tahoma,sans-serif;direction:rtl;color:#1b1b1b;background:#fff;width:740px;padding:18px 26px;box-sizing:border-box`;
+  const th='background:#0B3D2E;color:#F5D77A;padding:6px 4px;font-weight:700;font-size:12px';const td='padding:5px 4px;border-bottom:1px solid #e6dcc3;text-align:center;font-size:12px';
+  const sg=x=>`<span style="color:${x<0?'#c2182f':'#137a46'};font-weight:700">${x>0?'+':''}${fa(x)}</span>`;
+  const blocks=[];
+  // header + leaderboard (from renderArchive data)
+  const P={};const get=n=>P[n]=P[n]||{n,games:0,wins:0,bids:0,made:0,sh:0,pts:0};
+  games.forEach(g=>{g.players.forEach((n,i)=>{const p=get(n);p.games++;if(!g.unfinished&&g.winner===i%2)p.wins++});
+    g.hands.forEach(h=>{if(h.pass)return;const p=get(g.players[h.player]),tm=h.player%2,v=calcHand(h,g.rules).d[tm];p.bids++;if(v>0)p.made++;if(h.bid===SHELEM&&v>0)p.sh++;p.pts+=v})});
+  const L=Object.values(P).sort((x,y)=>y.wins-x.wins||y.pts-x.pts);
+  blocks.push(`<div style="${css}">
+    <div style="text-align:center;border-bottom:3px solid #D4AF37;padding-bottom:10px;margin-bottom:12px">
+      <div style="font-size:26px;font-weight:900;color:#0B3D2E">♠ گزارش بازی‌های شلم ♦</div>
+      <div style="font-size:12px;color:#666;margin-top:4px">تاریخ گزارش: ${fmtDT(Date.now()).replace('<br>',' · ')} · تعداد بازی‌ها: ${fa(games.length)}</div></div>
+    <div style="font-size:16px;font-weight:800;margin:6px 0">🏆 جدول برترین‌ها</div>
+    <table style="width:100%;border-collapse:collapse"><tr><th style="${th}">رتبه</th><th style="${th}">بازیکن</th><th style="${th}">برد / بازی</th><th style="${th}">حاکم</th><th style="${th}">موفق</th><th style="${th}">شلم</th><th style="${th}">سهم امتیاز</th></tr>
+    ${L.map((p,i)=>`<tr><td style="${td}">${fa(i+1)}</td><td style="${td}">${esc(p.n)}</td><td style="${td}">${fa(p.wins)} / ${fa(p.games)}</td><td style="${td}">${fa(p.bids)}</td><td style="${td}">${fa(p.made)}</td><td style="${td}">${fa(p.sh)}</td><td style="${td}">${sg(p.pts)}</td></tr>`).join('')}</table></div>`);
+  games.forEach((g,gi)=>{
+    let run=[0,0];
+    const rows=g.hands.map((h,i)=>{if(h.pass)return `<tr><td style="${td}">${fa(i+1)}</td><td style="${td};color:#888" colspan="4">همه پاس</td></tr>`;
+      const {d}=calcHand(h,g.rules);run=[run[0]+d[0],run[1]+d[1]];
+      return `<tr><td style="${td}">${fa(i+1)}</td><td style="${td}">${esc(g.players[h.player])}</td><td style="${td}">${h.bid===SHELEM?'شلم':fa(h.bid)}</td><td style="${td}">${sg(d[0])}<br><span style="color:#888;font-size:10px">گرفته ${fa(h.gA)} · جمع ${fa(run[0])}</span></td><td style="${td}">${sg(d[1])}<br><span style="color:#888;font-size:10px">گرفته ${fa(h.gB)} · جمع ${fa(run[1])}</span></td></tr>`}).join('');
+    const status=g.live?'در جریان':g.unfinished?'نیمه‌تمام':g.winner===-2?'مساوی':'برنده: '+esc(g.tn[g.winner]);
+    blocks.push(`<div style="${css}">
+      <div style="border:1px solid #D4AF37;border-radius:10px;overflow:hidden">
+      <div style="background:#0B3D2E;color:#F4ECD8;padding:8px 12px;display:flex;justify-content:space-between;font-size:13px"><b style="color:#F5D77A">بازی ${fa(games.length-gi)} — ${status}</b><span>سقف ${fa(g.target)}</span></div>
+      <div style="padding:8px 12px;font-size:12px;line-height:1.9">
+        شروع: ${fmtDT(g.startedAt).replace('<br>',' · ')}<br>${g.live?'':'پایان: '+fmtDT(g.endedAt).replace('<br>',' · ')+'<br>'}
+        مدت: ${fmtDur(g.endedAt-g.startedAt)} · دست‌ها: ${fa(g.hands.length)}<br>
+        <b style="font-size:14px">${esc(g.tn[0])} (${esc(g.players[0])}، ${esc(g.players[2])}): ${fa(g.final[0])} &nbsp;—&nbsp; ${esc(g.tn[1])} (${esc(g.players[1])}، ${esc(g.players[3])}): ${fa(g.final[1])}</b></div>
+      <table style="width:100%;border-collapse:collapse"><tr><th style="${th}">#</th><th style="${th}">حاکم</th><th style="${th}">خوانده</th><th style="${th}">${esc(g.tn[0])}</th><th style="${th}">${esc(g.tn[1])}</th></tr>${rows}</table></div></div>`)});
+  return blocks;
+}
+$('pdfBtn').onclick=async()=>{
+  const games=reportGames();if(!games.length){toast('هنوز بازی‌ای برای گزارش ثبت نشده');return}
+  const btn=$('pdfBtn');btn.disabled=true;const old=btn.textContent;btn.textContent='⏳ در حال ساخت PDF…';
+  const host=document.createElement('div');host.style.cssText='position:fixed;left:-10000px;top:0;z-index:-1';document.body.appendChild(host);
+  try{
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    try{await document.fonts.ready}catch(e){}
+    const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});
+    const PW=pdf.internal.pageSize.getWidth(),PH=pdf.internal.pageSize.getHeight(),M=24,W=PW-2*M;let y=M,first=true;
+    for(const html of reportBlocks(games)){
+      host.innerHTML=html;const el=host.firstElementChild;
+      const c=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',logging:false});
+      const h=c.height*W/c.width;
+      if(h<=PH-2*M){if(!first&&y+h>PH-M){pdf.addPage();y=M}pdf.addImage(c.toDataURL('image/jpeg',.9),'JPEG',M,y,W,h);y+=h+8}
+      else{ // tall block: slice across pages
+        if(!first){pdf.addPage();y=M}
+        const sliceH=Math.floor((PH-2*M)*c.width/W);for(let sy=0;sy<c.height;sy+=sliceH){
+          const part=document.createElement('canvas');part.width=c.width;part.height=Math.min(sliceH,c.height-sy);
+          part.getContext('2d').drawImage(c,0,sy,c.width,part.height,0,0,c.width,part.height);
+          if(sy>0){pdf.addPage()}pdf.addImage(part.toDataURL('image/jpeg',.9),'JPEG',M,M,W,part.height*W/c.width);y=M+part.height*W/c.width+8}}
+      first=false;
+    }
+    const ok=await deliverFile(pdf.output('blob'),`shelem-report_${stamp()}.pdf`);if(ok)toast('گزارش PDF ساخته شد ✔');
+  }catch(e){toast('ساخت PDF نشد — اینترنت را چک کن و دوباره امتحان کن')}
+  finally{host.remove();btn.disabled=false;btn.textContent=old}
+};
 
 /* ---------- win ---------- */
 function checkWin(silent){
@@ -784,7 +879,7 @@ function renderStats(){
       ${T('stBids')}: ${fa(hs.length)} · ${T('stOk')}: ${fa(ok)}${sh?` · ${T('shelem')}: ${fa(sh)} ♛`:''}<br>${T('stPts')}: <span class="${sum<0?'minus':'plus'}">${fa(sum)}</span>
       <div class="rate"><i style="width:${rate}%"></i></div></div>`}).join('');
   const withSuit=played.filter(h=>h.suit!=null);
-  $('suitstats').innerHTML=withSuit.length?SUITS.map(([s,r],i)=>{const hs=withSuit.filter(h=>h.suit===i),ok=hs.filter(h=>calcHand(h).d[teamOf(h.player)]>0).length;
+  if($('suitstats'))$('suitstats').innerHTML=withSuit.length?SUITS.map(([s,r],i)=>{const hs=withSuit.filter(h=>h.suit===i),ok=hs.filter(h=>calcHand(h).d[teamOf(h.player)]>0).length;
     return `<div><span style="color:${r?'#ff6b7d':'#fff'}">${s}</span>${fa(ok)}/${fa(hs.length)}</div>`}).join(''):'';
 }
 
