@@ -17,7 +17,7 @@
 :root{
   --felt:#0B3D2E; --navy:#0E1A2B; --pom:#7A1F2B; --gold:#D4AF37; --gold-hi:#F5D77A; --tq:#1FA2A6;
   --ivory:#F4ECD8; --muted:#bfb6a0; --red:#ff5d6c; --green:#3ee08f;
-  --teamA:#4fd1d6; --teamB:#ff8a5c;
+  --teamA:#4aa8ff; --teamB:#3ddc84;
   --card:rgba(10,22,18,.55); --line:rgba(212,175,55,.22);
   --tx:0px; --ty:0px;
 }
@@ -75,8 +75,8 @@ input[type=text],select{width:100%;padding:12px 14px;border-radius:14px;border:1
   color:var(--ivory);font:inherit;font-size:16px;outline:none;transition:.2s;min-width:0}
 input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.2)}
 .team-box{border-radius:18px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--line)}
-.team-box.a{background:linear-gradient(135deg,rgba(79,209,214,.15),rgba(79,209,214,.02))}
-.team-box.b{background:linear-gradient(135deg,rgba(255,138,92,.15),rgba(255,138,92,.02))}
+.team-box.a{background:linear-gradient(135deg,rgba(74,168,255,.15),rgba(74,168,255,.02))}
+.team-box.b{background:linear-gradient(135deg,rgba(61,220,132,.15),rgba(61,220,132,.02))}
 .team-box .tt{font-weight:800;margin-bottom:2px}
 .team-box.a .tt{color:var(--teamA)} .team-box.b .tt{color:var(--teamB)}
 .row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
@@ -107,8 +107,8 @@ summary{cursor:pointer;color:var(--gold-hi);font-weight:600;font-size:14px}
 /* scoreboard */
 .board{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
 .score{border-radius:22px;padding:14px 12px 12px;text-align:center;position:relative;overflow:hidden;border:1px solid var(--line);min-width:0}
-.score.a{background:linear-gradient(160deg,rgba(79,209,214,.25),rgba(8,30,40,.6))}
-.score.b{background:linear-gradient(160deg,rgba(255,138,92,.25),rgba(50,18,14,.6))}
+.score.a{background:linear-gradient(160deg,rgba(74,168,255,.5),rgba(14,45,105,.8));border-color:rgba(74,168,255,.55)}
+.score.b{background:linear-gradient(160deg,rgba(61,220,132,.45),rgba(8,70,40,.8));border-color:rgba(61,220,132,.55)}
 .score .name{font-weight:800;font-size:15px;overflow-wrap:anywhere}
 .score .players{font-size:12px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
 .score .pts{font-family:Lalezar,Vazirmatn;font-size:52px;line-height:1.15;margin:4px 0 2px;font-variant-numeric:tabular-nums;
@@ -116,7 +116,7 @@ summary{cursor:pointer;color:var(--gold-hi);font-weight:600;font-size:14px}
 .score .pts.neg{background:linear-gradient(180deg,#ffd0d6,#ff5d6c);-webkit-background-clip:text;background-clip:text}
 .bar{height:7px;background:rgba(0,0,0,.35);border-radius:9px;overflow:hidden}
 .bar i{display:block;height:100%;border-radius:9px;transition:width .7s cubic-bezier(.2,.9,.3,1.2)}
-.score.a .bar i{background:linear-gradient(90deg,var(--tq),var(--teamA))} .score.b .bar i{background:linear-gradient(90deg,#c4512b,var(--teamB))}
+.score.a .bar i{background:linear-gradient(90deg,#2273d6,var(--teamA))} .score.b .bar i{background:linear-gradient(90deg,#16955a,var(--teamB))}
 .score .lead{position:absolute;top:8px;left:10px;font-size:18px}
 .meta{text-align:center;font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.9}
 .dealer{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;font-size:14px;flex-wrap:wrap}
@@ -128,9 +128,9 @@ summary{cursor:pointer;color:var(--gold-hi);font-weight:600;font-size:14px}
 .pbtn .ord{position:absolute;top:6px;right:8px;font-size:11px;opacity:.7;font-weight:800}
 .pbtn.lead1{box-shadow:0 0 0 2px var(--gold) inset}
 .pbtn .first{position:absolute;top:-8px;left:-4px;font-size:10px;background:var(--tq);color:#022;border-radius:99px;padding:1px 6px;font-weight:800}
-.pbtn.a{background:rgba(79,209,214,.1)} .pbtn.b{background:rgba(255,138,92,.1)}
+.pbtn.a{background:rgba(74,168,255,.1)} .pbtn.b{background:rgba(61,220,132,.1)}
 .pbtn.on.a{background:var(--teamA);color:#05223a;border-color:var(--teamA)}
-.pbtn.on.b{background:var(--teamB);color:#3a1405;border-color:var(--teamB)}
+.pbtn.on.b{background:var(--teamB);color:#063a1f;border-color:var(--teamB)}
 .stepper{display:flex;align-items:center;gap:10px;margin-top:6px}
 .stepper button{width:54px;height:54px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--ivory);font-size:26px;font-weight:800;cursor:pointer;flex:none}
 .stepper button:active{transform:scale(.92)}
@@ -148,7 +148,7 @@ summary{cursor:pointer;color:var(--gold-hi);font-weight:600;font-size:14px}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
 .split .box{border-radius:14px;padding:10px;text-align:center;border:1px solid var(--line);min-width:0}
 .split .box div{overflow-wrap:anywhere}
-.split .box.a{background:rgba(79,209,214,.1)} .split .box.b{background:rgba(255,138,92,.1)}
+.split .box.a{background:rgba(74,168,255,.1)} .split .box.b{background:rgba(61,220,132,.1)}
 .split input{text-align:center;font-family:Lalezar,Vazirmatn;font-size:28px;padding:6px}
 .preview{margin-top:12px;padding:12px;border-radius:14px;background:rgba(0,0,0,.3);font-size:14px;line-height:2;overflow-wrap:anywhere}
 .plus{color:var(--green);font-weight:800}.minus{color:var(--red);font-weight:800}
@@ -281,8 +281,8 @@ tr.pass td{color:var(--muted);font-size:12px}
       <div id="leader"></div>
       <h2 style="margin-top:18px">💾 پشتیبان و گزارش</h2>
       <div class="tabs" style="margin-top:0;flex-wrap:wrap">
-        <button class="btn small btn-green" id="pdfBtn">📄 گزارش PDF</button>
-        <button class="btn small btn-blue" id="backupBtn">💾 پشتیبان‌گیری</button>
+        <button class="btn small" id="pdfBtn">📄 گزارش PDF</button>
+        <button class="btn ghost small" id="backupBtn">💾 پشتیبان‌گیری</button>
         <button class="btn ghost small" id="restoreBtn">📂 بازیابی</button>
       </div>
       <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
@@ -366,8 +366,8 @@ tr.pass td{color:var(--muted);font-size:12px}
         <button class="btn ghost small" id="newBtn" data-i="newGame"></button>
       </div>
       <div class="tabs">
-        <button class="btn small btn-green" id="pdfBtn2">📄 گزارش PDF</button>
-        <button class="btn small btn-blue" id="backupBtn2">💾 پشتیبان‌گیری</button>
+        <button class="btn ghost small" id="pdfBtn2">📄 گزارش PDF</button>
+        <button class="btn ghost small" id="backupBtn2">💾 پشتیبان‌گیری</button>
       </div>
     </div>
   </section>
@@ -878,16 +878,16 @@ function renderChart(){
   const area=k=>line(k)+`L${X(n)},${Y(mn)}L${X(0)},${Y(mn)}Z`;
   const rtl=I18N[LANG].dir==='rtl';
   $('chart').innerHTML=`<defs>
-    <linearGradient id="chgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fd1d6" stop-opacity=".45"/><stop offset="1" stop-color="#4fd1d6" stop-opacity="0"/></linearGradient>
-    <linearGradient id="chgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a5c" stop-opacity=".45"/><stop offset="1" stop-color="#ff8a5c" stop-opacity="0"/></linearGradient></defs>
+    <linearGradient id="chgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4aa8ff" stop-opacity=".45"/><stop offset="1" stop-color="#4aa8ff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="chgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ddc84" stop-opacity=".45"/><stop offset="1" stop-color="#3ddc84" stop-opacity="0"/></linearGradient></defs>
     ${showT?`<line x1="${P}" x2="${W-P}" y1="${Y(S.target)}" y2="${Y(S.target)}" stroke="#D4AF37" stroke-dasharray="5 5" stroke-width="1.2"/>
     <text x="${rtl?W-P:P}" y="${Y(S.target)-5}" fill="#F5D77A" font-size="11" direction="${rtl?'rtl':'ltr'}" text-anchor="start" font-family="Vazirmatn,Rubik,sans-serif">${T('target')} ${fa(S.target)}</text>`:''}
     ${mn<0?`<line x1="${P}" x2="${W-P}" y1="${Y(0)}" y2="${Y(0)}" stroke="rgba(255,255,255,.25)"/>`:''}
     <path d="${area(0)}" fill="url(#chgA)"/><path d="${area(1)}" fill="url(#chgB)"/>
-    <path d="${line(0)}" fill="none" stroke="#4fd1d6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-    <path d="${line(1)}" fill="none" stroke="#ff8a5c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${X(n)}" cy="${Y(pts[n][0])}" r="4.5" fill="#4fd1d6" stroke="#fff" stroke-width="1.5"/>
-    <circle cx="${X(n)}" cy="${Y(pts[n][1])}" r="4.5" fill="#ff8a5c" stroke="#fff" stroke-width="1.5"/>`;
+    <path d="${line(0)}" fill="none" stroke="#4aa8ff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${line(1)}" fill="none" stroke="#3ddc84" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${X(n)}" cy="${Y(pts[n][0])}" r="4.5" fill="#4aa8ff" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="${X(n)}" cy="${Y(pts[n][1])}" r="4.5" fill="#3ddc84" stroke="#fff" stroke-width="1.5"/>`;
   $('legend').innerHTML=`<span><i style="background:var(--teamA)"></i>${esc(teamName(0))}</span><span><i style="background:var(--teamB)"></i>${esc(teamName(1))}</span>`;
 }
 
@@ -921,7 +921,7 @@ function renderStats(){
 /* ---------- confetti ---------- */
 function confetti(){
   const c=$('conf'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
-  const cols=['#F5D77A','#D4AF37','#4fd1d6','#ff8a5c','#3ee08f','#ff5d6c','#fff'];
+  const cols=['#F5D77A','#D4AF37','#4aa8ff','#3ddc84','#3ee08f','#ff5d6c','#fff'];
   const P=Array.from({length:170},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height,r:4+Math.random()*6,c:cols[Math.random()*7|0],
     vy:2+Math.random()*4,vx:-2+Math.random()*4,a:Math.random()*6,s:['♠','♥','♣','♦',''][Math.random()*5|0]}));
   let f=0;(function loop(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.a+=.1;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;
