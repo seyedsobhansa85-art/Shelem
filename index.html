@@ -178,6 +178,8 @@ tr.pass td{color:var(--muted);font-size:12px}
 .lb td,.lb th{padding:7px 2px}
 .lb .medal{font-size:16px}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:8px}
+.btn.btn-green{background:linear-gradient(180deg,#3fd08a,#16955a 60%,#0e6e42);color:#fff;box-shadow:0 6px 16px rgba(22,149,90,.35),inset 0 -2px 0 rgba(0,0,0,.2)}
+.btn.btn-blue{background:linear-gradient(180deg,#5fb6ff,#2273d6 60%,#174f9c);color:#fff;box-shadow:0 6px 16px rgba(34,115,214,.35),inset 0 -2px 0 rgba(0,0,0,.2)}
 .topbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}.topbar .btn{padding:10px 6px}
 .timebox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .timebox .t{padding:10px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.9;min-width:0}
@@ -279,8 +281,8 @@ tr.pass td{color:var(--muted);font-size:12px}
       <div id="leader"></div>
       <h2 style="margin-top:18px">💾 پشتیبان و گزارش</h2>
       <div class="tabs" style="margin-top:0;flex-wrap:wrap">
-        <button class="btn small" id="pdfBtn">📄 گزارش PDF</button>
-        <button class="btn ghost small" id="backupBtn">💾 پشتیبان‌گیری</button>
+        <button class="btn small btn-green" id="pdfBtn">📄 گزارش PDF</button>
+        <button class="btn small btn-blue" id="backupBtn">💾 پشتیبان‌گیری</button>
         <button class="btn ghost small" id="restoreBtn">📂 بازیابی</button>
       </div>
       <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
@@ -364,8 +366,8 @@ tr.pass td{color:var(--muted);font-size:12px}
         <button class="btn ghost small" id="newBtn" data-i="newGame"></button>
       </div>
       <div class="tabs">
-        <button class="btn ghost small" id="pdfBtn2">📄 گزارش PDF</button>
-        <button class="btn ghost small" id="backupBtn2">💾 پشتیبان‌گیری</button>
+        <button class="btn small btn-green" id="pdfBtn2">📄 گزارش PDF</button>
+        <button class="btn small btn-blue" id="backupBtn2">💾 پشتیبان‌گیری</button>
       </div>
     </div>
   </section>
