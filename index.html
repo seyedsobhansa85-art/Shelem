@@ -178,7 +178,7 @@ tr.pass td{color:var(--muted);font-size:12px}
 .lb td,.lb th{padding:7px 2px}
 .lb .medal{font-size:16px}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:8px}
-.topbar{display:flex;gap:8px;margin:0 0 12px}.topbar .btn{flex:1}
+.topbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}.topbar .btn{padding:10px 6px}
 .timebox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .timebox .t{padding:10px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.9;min-width:0}
 .timebox .t b{display:block;color:var(--gold-hi);font-size:12px;font-weight:600}
@@ -302,7 +302,7 @@ tr.pass td{color:var(--muted);font-size:12px}
       </div>
     </div>
     <div class="meta" id="meta"></div>
-    <div class="topbar"><button class="btn ghost small" id="editBtn">✏️ ویرایش نام‌ها</button><button class="btn ghost small" id="newBtn2">🔄 بازی جدید</button></div>
+    <div class="topbar"><button class="btn ghost small" id="editBtn">✏️ ویرایش نام‌ها</button><button class="btn ghost small" id="pdfBtn2">📄 PDF</button><button class="btn ghost small" id="backupBtn2">💾 پشتیبان</button><button class="btn ghost small" id="newBtn2">🔄 بازی جدید</button></div>
     <div class="dealer" id="dealerRow">🎴 <span data-i="dealer"></span> <span class="pill" id="dealerName"></span><button id="dealerNext" data-i="change"></button></div>
 
     <div class="panel anim hidden" id="stepFirst">
@@ -587,8 +587,8 @@ function syncInputs(src){
 }
 $('gA').oninput=()=>syncInputs('gA');$('gB').oninput=()=>syncInputs('gB');
 function readRes(){const a=intOf($('gA').value),b=intOf($('gB').value);
-  if(isNaN(a)||isNaN(b))return {err:T('errEnter')};
   if(a>TOTAL||b>TOTAL)return {err:T('errRange')};
+  if(isNaN(a)||isNaN(b))return {err:T('errEnter')};
   if(a%5||b%5)return {err:T('errMult'),mult:1};
   if(a+b!==TOTAL)return {err:T('errSum')};
   return {gA:a,gB:b}}
@@ -647,7 +647,7 @@ $('editSave').onclick=()=>{
   S.players=names;S.teams=[$('eTA').value.trim()||null,$('eTB').value.trim()||null];save();
   try{const st=JSON.parse(store.get(SETUP_KEY)||'{}');st.players=names;st.tA=S.teams[0]||'';st.tB=S.teams[1]||'';store.set(SETUP_KEY,JSON.stringify(st))}catch(e){}
   [0,1,2,3].forEach(i=>$('p'+i).value=names[i]);$('tAname').value=S.teams[0]||'';$('tBname').value=S.teams[1]||'';
-  $('editModal').classList.remove('show');renderBoard();renderHist();curStep==='res'?renderResStep(true):renderBidStep();toast('نام‌ها به‌روز شد ✔')};
+  if(S.over)archAdd(S.winner);$('editModal').classList.remove('show');renderBoard();renderHist();curStep==='res'?renderResStep(true):renderBidStep();toast('نام‌ها به‌روز شد ✔')};
 function resetToSetup(){
   if(S&&!S.over&&S.hands.some(h=>!h.pass))archAdd(null);
   S=null;store.del(KEY);restoreSetup();renderArchive();
@@ -656,7 +656,31 @@ function resetToSetup(){
 
 /* ---------- archive ---------- */
 const ARCH_KEY='shelem-archive-v1';
-function archGet(){try{const a=JSON.parse(store.get(ARCH_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+const DEF_RULES={min:100,win:'got',lose:'2over100',shelem:390,all:'double',opp:true,neg:true};
+const num=(v,d)=>{const n=Number(v);return Number.isFinite(n)?n:d};
+const str=(v,d)=>typeof v==='string'&&v.trim()?v.slice(0,40):d;
+function cleanRules(r){r=r&&typeof r==='object'?r:{};return {min:[85,100,105,120].includes(+r.min)?+r.min:100,win:r.win==='bid'?'bid':'got',
+  lose:['1','2','2opp','2over100'].includes(r.lose)?r.lose:'2over100',shelem:[390,780,195].includes(+r.shelem)?+r.shelem:390,all:r.all==='none'?'none':'double',opp:r.opp!==false,neg:r.neg!==false}}
+function cleanHands(h){if(!Array.isArray(h))return null;const out=[];
+  for(const x of h){if(!x||typeof x!=='object')return null;
+    if(x.pass){out.push({pass:true,dealer:num(x.dealer,0)%4,at:num(x.at,undefined)});continue}
+    const pl=num(x.player,-1),bid=num(x.bid,-1),gA=num(x.gA,-1),gB=num(x.gB,-1);
+    if(![0,1,2,3].includes(pl)||!(bid===SHELEM||(bid>=85&&bid<=TOTAL&&bid%5===0))||gA<0||gB<0||gA+gB!==TOTAL||gA%5||gB%5)return null;
+    out.push({player:pl,bid,gA,gB,dealer:num(x.dealer,0)%4,at:num(x.at,undefined)})}
+  return out}
+function cleanGame(g){try{
+  if(!g||typeof g!=='object')return null;const id=num(g.id,NaN),st=num(g.startedAt,id);if(!Number.isFinite(id)||!Number.isFinite(st))return null;
+  if(!Array.isArray(g.players)||g.players.length!==4)return null;const players=g.players.map((n,i)=>str(n,'بازیکن '+(i+1)));
+  const hands=cleanHands(g.hands);if(!hands)return null;const rules=cleanRules(g.rules);
+  const tn=[0,1].map(i=>str(Array.isArray(g.tn)?g.tn[i]:null,players[i]+' و '+players[i+2]));
+  const fin=[0,0];hands.forEach(h=>{const {d}=calcHand(h,rules);fin[0]+=d[0];fin[1]+=d[1]});
+  const winner=[0,1,-2].includes(g.winner)?g.winner:null;
+  return {id,startedAt:st,endedAt:num(g.endedAt,st),players,tn,target:Math.min(100000,Math.max(100,num(g.target,1165))),rules,hands,final:fin,winner,unfinished:winner===null}
+}catch(e){return null}}
+function cleanState(c){const g=cleanGame({...c,id:c&&c.startedAt,tn:[]});if(!g)return null;
+  return {players:g.players,teams:[0,1].map(i=>str(c.teams&&c.teams[i],null)),target:g.target,rules:g.rules,hands:g.hands,
+    dealer:[0,1,2,3].includes(c.dealer)?c.dealer:null,over:false,startedAt:g.startedAt,endedAt:null}}
+function archGet(){try{const a=JSON.parse(store.get(ARCH_KEY)||'[]');return Array.isArray(a)?a.map(cleanGame).filter(Boolean):[]}catch(e){return []}}
 function archSet(a){store.set(ARCH_KEY,JSON.stringify(a))}
 function archRemove(id){archSet(archGet().filter(g=>g.id!==id))}
 function archAdd(w){
@@ -670,7 +694,7 @@ function shortDT(t){try{const P={};new Intl.DateTimeFormat('fa-IR-u-ca-persian',
 function winnerLabel(g){return g.unfinished?'<span class="tag u">نیمه‌تمام</span>':g.winner===-2?'<span class="tag">مساوی</span>':`<span class="tag">🏆 ${esc(g.tn[g.winner])}</span>`}
 function renderArchive(){
   const a=archGet();if(!a.length){$('archList').innerHTML='<div class="empty">هنوز بازی‌ای ثبت نشده.</div>';$('leader').innerHTML='<div class="empty">بعد از اولین بازی ساخته می‌شود.</div>';return}
-  $('archList').innerHTML=a.map(g=>`<button class="arch" data-id="${g.id}">
+  $('archList').innerHTML=a.map(g=>`<button class="arch" data-id="${Number(g.id)}">
     <div class="top"><span>${shortDT(g.startedAt)}</span><span>${fa(g.hands.filter(h=>!h.pass).length)} دست &nbsp;|&nbsp; ⏱ ${fmtDur(g.endedAt-g.startedAt)}</span></div>
     <div class="res">${B(g.tn[0])} <span class="num">${fa(g.final[0])}</span> — <span class="num">${fa(g.final[1])}</span> ${B(g.tn[1])}</div>
     <div>${winnerLabel(g)}</div></button>`).join('');
@@ -705,17 +729,22 @@ $('backupBtn').onclick=async()=>{
   const data={app:'shelem-score',version:1,exportedAt:Date.now(),archive:archGet(),current:S||load(),setup:JSON.parse(store.get(SETUP_KEY)||'null')};
   const ok=await deliverFile(new Blob([JSON.stringify(data)],{type:'application/json'}),`shelem-backup_${stamp()}.json`);
   if(ok)toast(`پشتیبان ساخته شد ✔ (${fa(data.archive.length)} بازی)`)};
+$('backupBtn2').onclick=()=>$('backupBtn').onclick();
+$('pdfBtn2').onclick=()=>$('pdfBtn').onclick();
 $('restoreBtn').onclick=()=>$('restoreFile').click();
 $('restoreFile').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{const d=JSON.parse(await f.text());if(d.app!=='shelem-score'||!Array.isArray(d.archive))throw 0;
-    const a=archGet(),ids=new Set(a.map(g=>g.id));let added=0;
-    d.archive.forEach(g=>{if(g&&g.id&&!ids.has(g.id)){a.push(g);ids.add(g.id);added++}});
-    if(d.current&&d.current.hands&&d.current.hands.length&&!ids.has(d.current.startedAt)&&!load()&&!S){store.set(KEY,JSON.stringify(d.current))}
-    a.sort((x,y)=>y.startedAt-x.startedAt);archSet(a);renderArchive();
-    toast(`بازیابی انجام شد ✔ — ${fa(added)} بازی جدید اضافه شد`);
-    if(!S&&load()){S=load();startGame(true);if(S.over)checkWin(true)}
-  }catch(err){toast('این فایل، پشتیبانِ امتیازشمار شلم نیست')}};
+  let d;try{d=JSON.parse(await f.text())}catch(err){d=null}
+  if(!d||d.app!=='shelem-score'||!Array.isArray(d.archive)){toast('این فایل، پشتیبانِ امتیازشمار شلم نیست');return}
+  const a=archGet(),ids=new Set(a.map(g=>g.id));let added=0,bad=0;
+  d.archive.forEach(raw=>{const g=cleanGame(raw);if(!g){bad++;return}if(!ids.has(g.id)){a.push(g);ids.add(g.id);added++}});
+  a.sort((x,y)=>y.startedAt-x.startedAt);archSet(a);
+  if(!store.get(SETUP_KEY)&&d.setup&&Array.isArray(d.setup.players)){const st={players:d.setup.players.slice(0,4).map(x=>str(x,'')),tA:str(d.setup.tA,''),tB:str(d.setup.tB,''),target:Math.min(100000,Math.max(100,num(d.setup.target,1165))),rules:cleanRules(d.setup.rules),m2:1};
+    store.set(SETUP_KEY,JSON.stringify(st));if(!S)restoreSetup()}
+  let resumed=false;
+  if(!S&&!load()&&d.current&&!d.current.over){const c=cleanState(d.current);if(c&&c.hands.length&&!ids.has(c.startedAt)){store.set(KEY,JSON.stringify(c));S=c;startGame(true);resumed=true}}
+  renderArchive();
+  toast(`بازیابی انجام شد ✔ — ${fa(added)} بازی اضافه شد${resumed?' و بازی نیمه‌کاره ادامه پیدا کرد':''}${bad?` (${fa(bad)} مورد خراب نادیده گرفته شد)`:''}`)};
 
 /* ---------- PDF report ---------- */
 function loadScript(src){return new Promise((ok,no)=>{if(document.querySelector(`script[src="${src}"]`))return ok();const sc=document.createElement('script');sc.src=src;sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
@@ -734,7 +763,7 @@ function reportBlocks(games){
   const P={};const get=n=>P[n]=P[n]||{n,games:0,wins:0,bids:0,made:0,sh:0,pts:0};
   games.forEach(g=>{g.players.forEach((n,i)=>{const p=get(n);p.games++;if(!g.unfinished&&g.winner===i%2)p.wins++});
     g.hands.forEach(h=>{if(h.pass)return;const p=get(g.players[h.player]),tm=h.player%2,v=calcHand(h,g.rules).d[tm];p.bids++;if(v>0)p.made++;if(h.bid===SHELEM&&v>0)p.sh++;p.pts+=v})});
-  const L=Object.values(P).sort((x,y)=>y.wins-x.wins||y.pts-x.pts);
+  const L=Object.values(P).sort((x,y)=>y.wins-x.wins||(y.wins/y.games)-(x.wins/x.games)||y.pts-x.pts);
   blocks.push(`<div style="${css}">
     <div style="text-align:center;border-bottom:3px solid #D4AF37;padding-bottom:10px;margin-bottom:12px">
       <div style="font-size:26px;font-weight:900;color:#0B3D2E">♠ گزارش بازی‌های شلم ♦</div>
@@ -753,7 +782,7 @@ function reportBlocks(games){
       <div style="background:#0B3D2E;color:#F4ECD8;padding:8px 12px;display:flex;justify-content:space-between;font-size:13px"><b style="color:#F5D77A">بازی ${fa(games.length-gi)} — ${status}</b><span>سقف ${fa(g.target)}</span></div>
       <div style="padding:8px 12px;font-size:12px;line-height:1.9">
         شروع: ${fmtDT(g.startedAt).replace('<br>',' · ')}<br>${g.live?'':'پایان: '+fmtDT(g.endedAt).replace('<br>',' · ')+'<br>'}
-        مدت: ${fmtDur(g.endedAt-g.startedAt)} · دست‌ها: ${fa(g.hands.length)}<br>
+        مدت: ${fmtDur(g.endedAt-g.startedAt)} · دست‌ها: ${fa(g.hands.filter(h=>!h.pass).length)}<br>
         <b style="font-size:14px">${esc(g.tn[0])} (${esc(g.players[0])}، ${esc(g.players[2])}): ${fa(g.final[0])} &nbsp;—&nbsp; ${esc(g.tn[1])} (${esc(g.players[1])}، ${esc(g.players[3])}): ${fa(g.final[1])}</b></div>
       <table style="width:100%;border-collapse:collapse"><tr><th style="${th}">#</th><th style="${th}">حاکم</th><th style="${th}">خوانده</th><th style="${th}">${esc(g.tn[0])}</th><th style="${th}">${esc(g.tn[1])}</th></tr>${rows}</table></div></div>`)});
   return blocks;
@@ -796,7 +825,7 @@ function checkWin(silent){
     if(neg.length===2){w=s[0]===s[1]?-2:(s[0]>s[1]?0:1);why=T(w===-2?'drawNeg':'winNegBoth')}
     else if(neg.length===1){w=1-neg[0];why=T('winNeg',{t:B(teamName(neg[0])),x:fa(S.target)})}}
   if(w===-1)return;
-  S.over=true;if(!S.endedAt)S.endedAt=(S.hands[S.hands.length-1]||{}).at||Date.now();save();archAdd(w);
+  S.over=true;S.winner=w;if(!S.endedAt)S.endedAt=(S.hands[S.hands.length-1]||{}).at||Date.now();save();archAdd(w);
   $('winTitle').innerHTML=w===-2?T('draw'):T('winTitle',{t:B(teamName(w))});
   $('winText').innerHTML=`${why}<br>${w===-2?'🤝':B(S.players[w])+T('and')+B(S.players[w+2])+' 👏'}<br><br>${T('finalScore')}: ${B(teamName(0))} ${fa(s[0])} — ${B(teamName(1))} ${fa(s[1])}<br>⏱ مدت بازی: ${fmtDur(S.endedAt-S.startedAt)}`;renderTime();
   $('winModal').classList.add('show');
@@ -917,8 +946,8 @@ addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const r=doc
   r.setProperty('--tx',((e.clientX/innerWidth-.5)*12)+'px');r.setProperty('--ty',((e.clientY/innerHeight-.5)*12)+'px')});
 
 /* ---------- boot ---------- */
-restoreSetup();renderArchive();
-const saved=load();
+restoreSetup();try{renderArchive()}catch(e){}
+let saved=load();if(saved&&saved.players){const over=saved.over,w=saved.winner,ea=saved.endedAt;const c=cleanState(saved);if(c){if(over){c.over=true;c.winner=w;c.endedAt=ea}saved=c}else saved=null}
 if(saved&&Array.isArray(saved.players)&&saved.rules){S=saved;startGame(true)}
 applyLang();
 if(S&&S.over)checkWin(true);
