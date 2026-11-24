@@ -180,6 +180,8 @@ tr.pass td{color:var(--muted);font-size:12px}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:8px}
 .btn.btn-green{background:linear-gradient(180deg,#3fd08a,#16955a 60%,#0e6e42);color:#fff;box-shadow:0 6px 16px rgba(22,149,90,.35),inset 0 -2px 0 rgba(0,0,0,.2)}
 .btn.btn-blue{background:linear-gradient(180deg,#5fb6ff,#2273d6 60%,#174f9c);color:#fff;box-shadow:0 6px 16px rgba(34,115,214,.35),inset 0 -2px 0 rgba(0,0,0,.2)}
+.credit{text-align:center;margin:26px 0 6px;font-size:14px;color:var(--muted);letter-spacing:.3px}
+.credit b{background:linear-gradient(180deg,#fff6d8,var(--gold-hi) 45%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
 .topbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}.topbar .btn{padding:10px 6px}
 .timebox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .timebox .t{padding:10px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);font-size:13px;line-height:1.9;min-width:0}
@@ -371,6 +373,7 @@ tr.pass td{color:var(--muted);font-size:12px}
       </div>
     </div>
   </section>
+  <footer class="credit">طراح: <b>هادی شریفیان</b></footer>
 </div>
 
 <div class="modal" id="winModal"><div class="panel">
@@ -448,6 +451,7 @@ const NEW_TOTAL=200;let TOTAL=NEW_TOTAL, SHELEM=2*NEW_TOTAL;const KEY='shelem-sc
 function setTotal(t){TOTAL=t||NEW_TOTAL;SHELEM=2*TOTAL}
 const isSh=(h,r)=>h.bid===2*((r&&r.total)||195);
 const SUITS=[['♠',0],['♥',1],['♣',0],['♦',1]];
+(function(){try{if(localStorage.getItem('shelem-wipe-1')!=='1'){['shelem-archive-v1','shelem-score-v3','shelem-setup-v3','shelem-score-v2','shelem-setup-v2'].forEach(k=>localStorage.removeItem(k));localStorage.setItem('shelem-wipe-1','1')}}catch(e){}})();
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 
 let S=null;
