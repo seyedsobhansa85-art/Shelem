@@ -12,6 +12,7 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="manifest" href="manifest.json">
 <title>امتیازشمار شلم</title>
+<link rel="stylesheet" href="fonts/fonts.css">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800;900&family=Lalezar&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -734,7 +735,9 @@ $('adClose').onclick=()=>$('archModal').classList.remove('show');
 
 /* ---------- backup / restore ---------- */
 function stamp(){const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`}
+const blobB64=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]);r.onerror=no;r.readAsDataURL(b)});
 async function deliverFile(blob,name){
+  if(window.ShelemAndroid){try{const r=ShelemAndroid.saveFile(name,blob.type||'application/octet-stream',await blobB64(blob));return r==='ok'}catch(e){toast('ذخیرهٔ فایل ممکن نشد');return false}}
   const file=new File([blob],name,{type:blob.type});
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});return true}}catch(e){if(e&&e.name==='AbortError')return false}
   try{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return true}catch(e){toast('ذخیرهٔ فایل در این مرورگر ممکن نشد');return false}
@@ -806,8 +809,9 @@ $('pdfBtn').onclick=async()=>{
   const btn=$('pdfBtn');btn.disabled=true;const old=btn.textContent;btn.textContent='⏳ در حال ساخت PDF…';
   const host=document.createElement('div');host.style.cssText='position:fixed;left:-10000px;top:0;z-index:-1';document.body.appendChild(host);
   try{
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    const lib=async(f,cdn)=>{if(location.protocol!=='file:')try{await loadScript('lib/'+f);return}catch(e){}await loadScript(cdn)};
+    await lib('html2canvas.min.js','https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await lib('jspdf.umd.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
     try{await document.fonts.ready}catch(e){}
     const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});
     const PW=pdf.internal.pageSize.getWidth(),PH=pdf.internal.pageSize.getHeight(),M=24,W=PW-2*M;let y=M,first=true;
@@ -863,7 +867,7 @@ function tone(freqs,dur=.12,type='triangle',gap=.09){if(!soundOn)return;try{AC=A
 const sfx={tap:()=>tone([660],.06),good:()=>tone([523,659,784],.16),bad:()=>tone([392,311,247],.22,'sawtooth',.12),
   win:()=>tone([523,659,784,1047,784,1047,1319],.25,'triangle',.13)};
 let userTapped=false;document.addEventListener('pointerdown',()=>userTapped=true,{once:true});
-function buzz(p){if(!userTapped)return;try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function buzz(p){if(!userTapped)return;try{if(window.ShelemAndroid&&ShelemAndroid.vibrate){ShelemAndroid.vibrate(JSON.stringify([].concat(p)));return}navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 document.addEventListener('click',e=>{if(e.target.closest('.pbtn,.chip,.suit,.stepper button'))sfx.tap()});
 async function wakeLock(){try{if('wakeLock' in navigator)await navigator.wakeLock.request('screen')}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S&&!S.over)wakeLock()});
